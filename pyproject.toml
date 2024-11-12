@@ -1,0 +1,15 @@
+[project]
+name = "before-you-sign"
+version = "0.1.0"
+description = "Assistant for reading EULA, ToS, etc."
+authors = [
+    {name = "Peter Minin", email = "peterminin@gmail.com"},
+]
+dependencies = []
+requires-python = "~=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
