@@ -5,11 +5,11 @@ description = "Assistant for reading EULA, ToS, etc."
 authors = [
     {name = "Peter Minin", email = "peterminin@gmail.com"},
 ]
-dependencies = []
+dependencies = ["gradio~=5.6.0", "pypandoc-binary~=1.14"]
 requires-python = "~=3.12"
 readme = "README.md"
 license = {text = "MIT"}
 
 
 [tool.pdm]
-distribution = false
+distribution = true
