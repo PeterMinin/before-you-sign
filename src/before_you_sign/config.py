@@ -1,5 +1,5 @@
-from typing import TypedDict
 from pathlib import Path
+from typing import TypedDict
 
 import yaml
 

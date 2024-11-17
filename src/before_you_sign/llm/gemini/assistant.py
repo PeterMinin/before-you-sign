@@ -4,7 +4,8 @@ import google.generativeai as genai
 from google.api_core import retry
 
 from before_you_sign.config import Config
-from .prompts import SYSTEM_PROMPT, MAIN_PROMPT
+
+from .prompts import MAIN_PROMPT, SYSTEM_PROMPT
 
 MODEL_NAME = "gemini-1.5-flash-002"  # Fixed version for Context Caching
 
@@ -19,9 +20,7 @@ class GeminiAssistant:
         genai.configure(api_key=config["GOOGLE_API_KEY"])
 
         on_error = (
-            (lambda exc: on_retry(f"Temporary error, will retry. ({exc})"))
-            if on_retry
-            else None
+            (lambda exc: on_retry(f"Temporary error, will retry. ({exc})")) if on_retry else None
         )
         self.retry_policy = {
             "retry": retry.Retry(predicate=retry.if_transient_error, on_error=on_error)

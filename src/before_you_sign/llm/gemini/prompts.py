@@ -30,7 +30,7 @@ on a scale from A to F and a one-sentence summary.
 """
 
 # """
-# 
+#
 # Then the user may ask additional questions. By default, keep the answers concise.
 # Include citations from the document if appropriate.
 # """
