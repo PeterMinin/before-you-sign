@@ -1,33 +1,33 @@
+[build-system]
+requires = ["setuptools"]
+
 [project]
 name = "before-you-sign"
 version = "0.1.0"
-description = "Assistant for reading EULA, ToS, etc."
-authors = [
-    {name = "Peter Minin", email = "peterminin@gmail.com"},
-]
+description = "Assistant for reading Terms of Service, EULA, etc."
+authors = [{ name = "Peter Minin", email = "peterminin@gmail.com" }]
 dependencies = [
+    "google-generativeai~=0.8.3",
     "gradio~=5.6.0",
     "pypandoc-binary~=1.14",
-    "google-generativeai~=0.8.3",
     "pyyaml~=6.0.2",
 ]
 requires-python = "~=3.12"
 readme = "README.md"
-license = {text = "MIT"}
+license = { text = "MIT" }
+
+[dependency-groups]
+dev = ["ruff>=0.7.4"]
 
 
 [tool.pdm]
 distribution = true
 
-[dependency-groups]
-dev = [
-    "ruff>=0.7.4",
-]
-
 [tool.pdm.scripts]
 lint = "ruff check --fix --show-fixes"
 format = "ruff format"
 ruff = { composite = ["lint", "format"] }
+
 
 [tool.ruff]
 line-length = 100
