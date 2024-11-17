@@ -10,7 +10,7 @@ import gradio as gr
 
 from before_you_sign.config import Config, load_config
 from before_you_sign.inputs.pandoc import convert_with_pandoc
-from before_you_sign.llm.gemini import GeminiAssistant
+from before_you_sign.llm.gemini.assistant import GeminiAssistant
 
 
 def get_args():
