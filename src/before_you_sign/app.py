@@ -4,6 +4,7 @@ The entry point of the app
 
 import argparse
 import traceback
+from datetime import datetime
 from pathlib import Path
 
 import gradio as gr
@@ -29,15 +30,31 @@ def get_args():
 
 
 def process_document(value: dict[str, str | list]):
+    """
+    The main processing function.
+    Takes the document and produces the response.
+    """
     document = value["text"]
     files = value["files"]
     if not (document or files):
         return gr.skip()
     assert document and not files
     global config
-    assistant = GeminiAssistant(config, on_retry=gr.Warning)
+    exp_log_dir = get_exp_log_dir(config["log_dir"])
+    assistant = GeminiAssistant(config, exp_log_dir, on_retry=gr.Warning)
     response = assistant.process(document)
     return response
+
+
+def get_exp_log_dir(base_dir: Path) -> Path:
+    """
+    Creates a subfolder for the experiment's logs.
+    """
+    base_dir.mkdir(exist_ok=True)
+    name = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    path = base_dir / name
+    path.mkdir()
+    return path
 
 
 def try_get_as_markdown(filepath: str) -> str:

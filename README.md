@@ -72,6 +72,10 @@ It's a YAML file:
 ```yaml
 # API key for a Google Cloud project with Gemini
 GOOGLE_API_KEY: '...'
+
+# Path where experiments will be logged in subfolders.
+# Its parent must exist.
+log_dir: '...'
 ```
 
 Default location: `<project_root>/local/config.yaml`.
