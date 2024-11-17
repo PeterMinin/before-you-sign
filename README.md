@@ -28,6 +28,7 @@ Inspired by the [TOS;DR](tosdr.org) project, powered by LLMs. No guarantees, jus
 - Prompting tactics for cloud LLMs:
   - Include all the document(s) in all prompts, or most.
   - Use a context caching API, and only put static instructions before the data.
+  - Upd: see also [llm/gemini/Readme.md](src/before_you_sign/llm/gemini/Readme.md).
 - Prompting tactics for local execution on consumer GPUs:
   - Chunking. Store the document(s) in memory in chunks. Preferrably split on document sections.
   - Summarization
@@ -46,6 +47,13 @@ Inspired by the [TOS;DR](tosdr.org) project, powered by LLMs. No guarantees, jus
 ## Usage
 
 ### Installation
+
+You can use the standard:
+```
+pip install .
+```
+
+#### For development
 
 Install the Project and Dependency Manager: [PDM](https://pdm-project.org/). I suggest using pipx for that:
 ```
@@ -72,11 +80,11 @@ Default location: `<project_root>/local/config.yaml`.
 
 After installing the app, run:
 ```
-python src/before_you_sign/app.py -c path/to/config.yaml
+python -m before_you_sign.app -c path/to/config.yaml
 ```
 
 Or, for development:
 ```
-gradio src/before_you_sign/app.py
+pdm dev_serve
 ```
 In this case the config must be in the default location.
