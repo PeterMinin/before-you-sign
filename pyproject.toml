@@ -24,6 +24,8 @@ dev = ["ruff>=0.7.4"]
 distribution = true
 
 [tool.pdm.scripts]
+serve = "python -m before_you_sign.app"
+dev_serve = "gradio src/before_you_sign/app.py"
 lint = "ruff check --fix --show-fixes"
 format = "ruff format"
 ruff = { composite = ["lint", "format"] }
