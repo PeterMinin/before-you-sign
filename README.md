@@ -42,3 +42,41 @@ Inspired by the [TOS;DR](tosdr.org) project, powered by LLMs. No guarantees, jus
   - Take a basic T&C and add a bad provision. Make several versions, from absurd to just weird.
   - Take some examples from [TOS;DR](tosdr.org), if their license allows. Adjust their score to my criteria.
 - Configuration: API key.
+
+## Usage
+
+### Installation
+
+Install the Project and Dependency Manager: [PDM](https://pdm-project.org/). I suggest using pipx for that:
+```
+pipx install pdm
+```
+
+Then, prepare the project's virtual env. Run from the project's root:
+```
+pdm install
+```
+
+### Config
+
+It's a YAML file:
+
+```yaml
+# API key for a Google Cloud project with Gemini
+GOOGLE_API_KEY: '...'
+```
+
+Default location: `<project_root>/local/config.yaml`.
+
+### Launch
+
+After installing the app, run:
+```
+python src/before_you_sign/app.py -c path/to/config.yaml
+```
+
+Or, for development:
+```
+gradio src/before_you_sign/app.py
+```
+In this case the config must be in the default location.

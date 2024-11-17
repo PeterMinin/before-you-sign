@@ -2,12 +2,30 @@
 The entry point of the app
 """
 
-import os.path as osp
+import argparse
 import traceback
+from pathlib import Path
 
 import gradio as gr
 
+from before_you_sign.config import Config, load_config
 from before_you_sign.inputs.pandoc import convert_with_pandoc
+from before_you_sign.llm.gemini import GeminiAssistant
+
+
+def get_args():
+    project_root = Path(__file__).parents[2]
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        help="Config YAML file. Default: <project_root>/local/config.yaml.",
+        default=project_root / "local/config.yaml",
+    )
+    args = parser.parse_args()
+    return args
 
 
 def process_document(value: dict[str, str | list]):
@@ -15,18 +33,18 @@ def process_document(value: dict[str, str | list]):
     files = value["files"]
     if not (document or files):
         return gr.skip()
-    assert bool(document) != bool(files)
-    return f"""
-    # Response
-    Document length: {len(document)}
-    """
+    assert document and not files
+    global config
+    assistant = GeminiAssistant(config, on_retry=gr.Warning)
+    response = assistant.process(document)
+    return response
 
 
 def try_get_as_markdown(filepath: str) -> str:
     try:
         return convert_with_pandoc(filepath)
     except ValueError:
-        gr.Warning(f"Couldn't read the file\n({ osp.basename(filepath) })")
+        gr.Warning(f"Couldn't read the file\n({ Path(filepath).name })")
         traceback.print_exc()
         return ""
 
@@ -55,6 +73,9 @@ def preprocess_document_input(value: dict[str, str | list], progress=gr.Progress
 def clear_document_input():
     return gr.MultimodalTextbox(value=None)
 
+
+args = get_args()
+config: Config = load_config(args.config)
 
 with gr.Blocks(title="Before You Sign") as demo:
     document = gr.MultimodalTextbox(
