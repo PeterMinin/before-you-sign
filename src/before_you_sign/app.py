@@ -66,7 +66,7 @@ def try_get_as_markdown(filepath: str) -> str:
         return ""
 
 
-def preprocess_document_input(value: dict[str, str | list], progress=gr.Progress()):
+def preprocess_document_input(value: dict[str, str | list]):
     """
     Does nothing if just text is entered.
     If a file is uploaded, converts it to text (if possible).
@@ -80,7 +80,6 @@ def preprocess_document_input(value: dict[str, str | list], progress=gr.Progress
     else:
         assert len(value["files"]) == 1
         filepath = value["files"][0]
-        progress((1, None), "Converting to Markdown")
         text = try_get_as_markdown(filepath)
         value["text"] = text
         del value["files"][0]
@@ -105,7 +104,7 @@ with gr.Blocks(title="Before You Sign") as demo:
     )
     document.change(preprocess_document_input, document, document)
     document.stop(clear_document_input, outputs=document)
-    response = gr.Markdown()
+    response = gr.Markdown(min_height="5em")
     document.submit(process_document, document, response)
 
 if __name__ == "__main__":
