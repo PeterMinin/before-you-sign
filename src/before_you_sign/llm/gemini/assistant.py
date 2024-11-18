@@ -6,6 +6,7 @@ from typing import Callable
 import google.generativeai as genai
 from google.api_core import retry
 from google.generativeai.caching import CachedContent
+from google.generativeai.types import generation_types
 
 from before_you_sign.config import Config
 
@@ -89,6 +90,7 @@ class GeminiAssistant:
             response_mime_type="application/json",
             response_schema=Metadata,
         )
+        generation_config = self._force_required_fields(generation_config)
         model = genai.GenerativeModel.from_cached_content(
             cached_content, generation_config=generation_config
         )
@@ -132,6 +134,7 @@ class GeminiAssistant:
             response_mime_type="application/json",
             response_schema=Summary,
         )
+        generation_config = self._force_required_fields(generation_config)
         model = genai.GenerativeModel.from_cached_content(
             cached_content, generation_config=generation_config
         )
@@ -146,6 +149,16 @@ class GeminiAssistant:
         score = Score(data["score"])
         summary = Summary(score, data["summary"])
         return summary
+
+    @staticmethod
+    def _force_required_fields(generation_config) -> dict:
+        """
+        Workaround for https://github.com/google-gemini/generative-ai-python/issues/560.
+        """
+        generation_config = generation_types.to_generation_config_dict(generation_config)
+        schema = generation_config["response_schema"]
+        schema.required = list(schema.properties)
+        return generation_config
 
     def _log_file(self, text: str, name: str):
         path = self.exp_log_dir / name
