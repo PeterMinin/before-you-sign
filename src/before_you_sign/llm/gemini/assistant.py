@@ -37,17 +37,26 @@ class GeminiAssistant:
 
         :returns: response, including the summary and intermediate steps.
         """
-        model = genai.GenerativeModel(
+        cached_content = genai.caching.CachedContent.create(
             MODEL_NAME,
             system_instruction=SYSTEM_PROMPT,
-            generation_config=genai.GenerationConfig(temperature=0),
+            contents=[document],
+        )
+        self._log_file(str(cached_content), "cached_content.txt")
+        self._log_file(SYSTEM_PROMPT, "system_prompt.txt")
+        self._log_file(document, "document.md")
+
+        model = genai.GenerativeModel.from_cached_content(
+            cached_content, generation_config=genai.GenerationConfig(temperature=0)
         )
         self._log_file(str(model), "model.txt")
-        prompt_parts = [MAIN_PROMPT, document]
+
         self._log_file(MAIN_PROMPT, "request_prompt.txt")
-        self._log_file(document, "document.md")
-        response = model.generate_content(prompt_parts)
+        response = model.generate_content(MAIN_PROMPT)
         self._log_file(response.text, "response.md")
+
+        cached_content.delete()
+
         return response.text
 
     def _log_file(self, text: str, name: str):
