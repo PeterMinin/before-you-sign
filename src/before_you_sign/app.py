@@ -3,7 +3,6 @@ The entry point of the app
 """
 
 import argparse
-import pprint
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -46,19 +45,15 @@ def process_document(value: dict[str, str | list]):
     metadata = assistant.start(document)
     summary, thoughts = assistant.summarize(metadata)
     assistant.finalize()
-    response = f"""
-# Metadata
-```
-{pprint.pformat(metadata)}
-```
-# Summary
-```
-{pprint.pformat(summary)}
-```
-## Details
-{thoughts}
-"""
-    return response
+    return {
+        doc_type: metadata.document_type,
+        doc_lang: metadata.document_language,
+        service_name: metadata.service_name,
+        service_descr: metadata.service_nature,
+        score: summary.score,
+        comment: summary.comment,
+        details: thoughts
+    }
 
 
 def get_exp_log_dir(base_dir: Path) -> Path:
@@ -119,8 +114,22 @@ with gr.Blocks(title="Before You Sign") as demo:
     )
     document.change(preprocess_document_input, document, document)
     document.stop(clear_document_input, outputs=document)
-    response = gr.Markdown(min_height="5em")
-    document.submit(process_document, document, response)
+    with gr.Accordion("Metadata", open=False):
+        with gr.Row():
+            doc_type = gr.Textbox(label="Document type", key="doc_type")
+            doc_lang = gr.Textbox(label="Language", key="doc_lang")
+        with gr.Row():
+            service_name = gr.Textbox(label="Service", key="name")
+            service_descr = gr.Textbox(label="Description", key="descr")
+    score = gr.Textbox(label="Score", key="score")
+    comment = gr.Textbox(label="Comment", key="comment")
+    with gr.Accordion("Details", open=False):
+        details = gr.Markdown(key="details")
+    document.submit(
+        process_document,
+        document,
+        [doc_type, doc_lang, service_name, service_descr, score, comment, details],
+    )
 
 if __name__ == "__main__":
     demo.launch()
