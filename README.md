@@ -92,3 +92,7 @@ Or, for development:
 pdm dev_serve
 ```
 In this case the config must be in the default location.
+
+## License
+
+While this project is available under the MIT license, it has a transitive dependency on GPL2 software, [Pandoc](https://github.com/jgm/pandoc).
