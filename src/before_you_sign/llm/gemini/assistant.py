@@ -1,17 +1,30 @@
+import dataclasses
+import json
 from pathlib import Path
 from typing import Callable
 
 import google.generativeai as genai
 from google.api_core import retry
+from google.generativeai.caching import CachedContent
 
 from before_you_sign.config import Config
 
-from .prompts import MAIN_PROMPT, SYSTEM_PROMPT
+from ..api import Metadata, Score, Summary
+from . import prompts
 
 MODEL_NAME = "gemini-1.5-flash-002"  # Fixed version for Context Caching
 
 
 class GeminiAssistant:
+    """
+    Usage:
+
+        metadata = assistant.start(document)
+        summary, thoughts = assistant.summarize(metadata)
+        ...
+        assistant.finalize()  # Optional, but can reduce costs
+    """
+
     def __init__(self, config: Config, exp_log_dir: Path, on_retry: Callable[[str], None] | None):
         """
         :param config: dict-like with a key "GOOGLE_API_KEY".
@@ -29,35 +42,110 @@ class GeminiAssistant:
             "retry": retry.Retry(predicate=retry.if_transient_error, on_error=on_error)
         }
 
-    def process(self, document: str) -> str:
-        """
-        One-step dialog: takes a document, gives the final result.
+        self.base_generation_config = genai.GenerationConfig(temperature=0)
+        self.cached_content = None
 
-        :param document: document text.
-
-        :returns: response, including the summary and intermediate steps.
+    def start(self, document: str) -> Metadata:
         """
-        cached_content = genai.caching.CachedContent.create(
+        Preprocess a new document.
+        """
+        self.finalize()
+        self.cached_content = CachedContent.create(
             MODEL_NAME,
-            system_instruction=SYSTEM_PROMPT,
+            system_instruction=prompts.SYSTEM_PROMPT,
             contents=[document],
         )
-        self._log_file(str(cached_content), "cached_content.txt")
-        self._log_file(SYSTEM_PROMPT, "system_prompt.txt")
+        self._log_file(str(self.cached_content), "cached_content.txt")
+        self._log_file(prompts.SYSTEM_PROMPT, "system_prompt.txt")
         self._log_file(document, "document.md")
 
-        model = genai.GenerativeModel.from_cached_content(
-            cached_content, generation_config=genai.GenerationConfig(temperature=0)
+        metadata: Metadata = self._generate_metadata(self.cached_content)
+        return metadata
+
+    def summarize(self, metadata: Metadata) -> tuple[Summary, str]:
+        """
+        Finish the processing started with `start()`.
+        """
+        assert self.cached_content
+        thoughts: str = self._generate_thoughts(self.cached_content, metadata)
+        summary: Summary = self._generate_summary(self.cached_content, thoughts)
+        return summary, thoughts
+
+    def finalize(self):
+        """
+        Free resources.
+        Can reduce costs, but there is also auto-removal on a timeout.
+        """
+        if self.cached_content:
+            self.cached_content.delete()
+            self.cached_content = None
+
+    def _generate_metadata(self, cached_content: CachedContent) -> Metadata:
+        """
+        Runs a structured prompt on the doc.
+        """
+        generation_config = dataclasses.replace(
+            self.base_generation_config,
+            response_mime_type="application/json",
+            response_schema=Metadata,
         )
-        self._log_file(str(model), "model.txt")
+        model = genai.GenerativeModel.from_cached_content(
+            cached_content, generation_config=generation_config
+        )
+        self._log_file(str(model), "metadata_model.txt")
 
-        self._log_file(MAIN_PROMPT, "request_prompt.txt")
-        response = model.generate_content(MAIN_PROMPT)
-        self._log_file(response.text, "response.md")
+        prompt = prompts.METADATA_PROMPT
+        response = model.generate_content(prompt, request_options=self.retry_policy)
+        self._log_file(prompt, "metadata_prompt.txt")
+        self._log_file(response.text, "metadata_response.json")
 
-        cached_content.delete()
+        data = json.loads(response.text)
+        metadata = Metadata(**data)
+        return metadata
+
+    def _generate_thoughts(self, cached_content: CachedContent, metadata: Metadata) -> str:
+        """
+        Runs an unstructured prompt on the doc and its metadata.
+        """
+        model = genai.GenerativeModel.from_cached_content(
+            cached_content, generation_config=self.base_generation_config
+        )
+        self._log_file(str(model), "thoughts_model.txt")
+
+        prompt = prompts.INTERMEDIATE_PROMPT_TEMPLATE.format(
+            document_type=metadata.document_type,
+            document_language=metadata.document_language,
+            service_nature=metadata.service_nature,
+        )
+        response = model.generate_content(prompt, request_options=self.retry_policy)
+        self._log_file(prompt, "thoughts_prompt.txt")
+        self._log_file(response.text, "thoughts_response.md")
 
         return response.text
+
+    def _generate_summary(self, cached_content: CachedContent, thoughts: str) -> Summary:
+        """
+        Runs a structured prompt on the doc and intermediate thoughts.
+        """
+        generation_config = dataclasses.replace(
+            self.base_generation_config,
+            response_mime_type="application/json",
+            response_schema=Summary,
+        )
+        model = genai.GenerativeModel.from_cached_content(
+            cached_content, generation_config=generation_config
+        )
+        self._log_file(str(model), "summary_model.txt")
+
+        prompt_parts = [thoughts, prompts.SUMMARY_PROMPT]
+        response = model.generate_content(prompt_parts, request_options=self.retry_policy)
+        self._log_file(prompt_parts[-1], "summary_prompt_end.txt")
+        self._log_file(response.text, "summary_response.json")
+
+        data = json.loads(response.text)
+        score = Score(data["score"])
+        summary = Summary(score, data["summary"])
+        return summary
 
     def _log_file(self, text: str, name: str):
         path = self.exp_log_dir / name

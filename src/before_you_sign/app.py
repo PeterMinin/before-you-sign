@@ -3,6 +3,7 @@ The entry point of the app
 """
 
 import argparse
+import pprint
 import traceback
 from datetime import datetime
 from pathlib import Path
@@ -42,7 +43,21 @@ def process_document(value: dict[str, str | list]):
     global config
     exp_log_dir = get_exp_log_dir(config["log_dir"])
     assistant = GeminiAssistant(config, exp_log_dir, on_retry=gr.Warning)
-    response = assistant.process(document)
+    metadata = assistant.start(document)
+    summary, thoughts = assistant.summarize(metadata)
+    assistant.finalize()
+    response = f"""
+# Metadata
+```
+{pprint.pformat(metadata)}
+```
+# Summary
+```
+{pprint.pformat(summary)}
+```
+## Details
+{thoughts}
+"""
     return response
 
 
