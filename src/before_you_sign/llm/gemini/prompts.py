@@ -36,10 +36,10 @@ Service: {service_nature}.
 """
 
 SUMMARY_PROMPT = """
-Finish with a general score of user-friendliness of the conditions (not the document itself)
+Finish with a general score of how much attention the user should pay to the rules
 on a scale from A to F and a one-sentence summary.
-- "A" means "Very nice, use however you like",
-- "B" means "Generally good, with reasonable limitations to keep in mind",
+- "A" means "Nothing to worry about",
+- "B" means "Reasonable limitations to keep in mind",
 - "C" means "Notable restrictions or inconveniences",
 - "D" means "Major restrictions or risks",
 - "E" means "Extreme caution required",
