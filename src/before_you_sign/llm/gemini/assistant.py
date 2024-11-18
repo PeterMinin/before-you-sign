@@ -146,8 +146,8 @@ class GeminiAssistant:
         self._log_file(response.text, "summary_response.json")
 
         data = json.loads(response.text)
-        score = Score(data["score"])
-        summary = Summary(score, data["summary"])
+        data["score"] = Score(data["score"])
+        summary = Summary(**data)
         return summary
 
     @staticmethod

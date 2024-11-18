@@ -48,7 +48,7 @@ on a scale from A to F and a one-sentence summary.
 Reply in JSON:
 {
    "score": "A",
-   "summary": "..."
+   "comment": "..."  # the summary
 }
 """
 

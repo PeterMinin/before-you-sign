@@ -26,4 +26,4 @@ class Score(StrEnum):
 @dataclass
 class Summary:
     score: Score
-    summary: str
+    comment: str
