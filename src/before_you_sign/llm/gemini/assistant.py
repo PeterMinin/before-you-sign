@@ -153,6 +153,7 @@ class GeminiAssistant:
     @staticmethod
     def _force_required_fields(generation_config) -> dict:
         """
+        Returns a copy with all fields in the schema marked as required.
         Workaround for https://github.com/google-gemini/generative-ai-python/issues/560.
         """
         generation_config = generation_types.to_generation_config_dict(generation_config)
