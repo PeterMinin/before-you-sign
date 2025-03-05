@@ -27,7 +27,7 @@ A similar test with a larger real document (in [tests/data](tests/data/): "Wikim
 
 Main TODOs:
 - Input formats:
-  - PDF support. For now, a workaround is manual conversion via LibreOffice / MS Word.
+  - ~PDF support.~
   - URL and better HTML support. Current HTML conversion can leave a lot of noise.
 - Handle multiple documents.
 - Request user category.
@@ -43,6 +43,12 @@ Main TODOs:
   - Solution for many formats: Pandoc.
     Can convert DOCX, simple HTML and many others into Markdown (various flavors), or to plain text.
     Can not read PDF.
+  - Another wide-range solution: [MarkItDown](https://github.com/microsoft/markitdown).
+    Can read PDF.
+    Not perfect, because it doesn't seem to recognize tables in PDF.
+    From limited testing, handles DOCX better than Pandoc.
+    (Namely, converts tables to clean Markdown tables instead of embedded HTML.)
+    But is worse for HTML, because it doesn't seem to strip the header, footer, etc.
 - Prompting strategy: predefined intermediate questions, then summarization.
   - User input request: user category. If it seems important, ask the user to select a description that matches them well or to enter their own.
 - Output presentation: first a score and a summary, then a set of spoilers with the intermediate results.

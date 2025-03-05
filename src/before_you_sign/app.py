@@ -10,7 +10,7 @@ from pathlib import Path
 import gradio as gr
 
 from before_you_sign.config import Config, load_config
-from before_you_sign.inputs.pandoc import convert_with_pandoc
+from before_you_sign.inputs.all import get_as_markdown
 from before_you_sign.llm.gemini.assistant import GeminiAssistant
 
 
@@ -52,7 +52,7 @@ def process_document(value: dict[str, str | list]):
         service_descr: metadata.service_nature,
         score: summary.score,
         comment: summary.comment,
-        details: thoughts
+        details: thoughts,
     }
 
 
@@ -69,7 +69,7 @@ def get_exp_log_dir(base_dir: Path) -> Path:
 
 def try_get_as_markdown(filepath: str) -> str:
     try:
-        return convert_with_pandoc(filepath)
+        return get_as_markdown(filepath)
     except ValueError:
         gr.Warning(f"Couldn't read the file\n({ Path(filepath).name })")
         traceback.print_exc()

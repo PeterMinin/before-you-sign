@@ -3,7 +3,7 @@ requires = ["setuptools"]
 
 [project]
 name = "before-you-sign"
-version = "0.1.0"
+version = "0.2.0"
 description = "Assistant for reading Terms of Service, EULA, etc."
 authors = [{ name = "Peter Minin", email = "peterminin@gmail.com" }]
 dependencies = [
@@ -11,6 +11,7 @@ dependencies = [
     "gradio~=5.6.0",
     "pypandoc-binary~=1.14",
     "pyyaml~=6.0.2",
+    "markitdown[docx,pdf]>=0.0.1a5",
 ]
 requires-python = "~=3.12"
 readme = "README.md"
